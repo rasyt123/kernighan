@@ -14,6 +14,9 @@ double checkDouble4(double num);
 double checkDouble5(double num);
 int checkNum1(int num);
 int checkNum2(int num);
+void checkLoanInvestPayment(double LoanInvestPayment, double minPayment);
+double PayOffLoanBeforeInvest(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn);
+void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn, double minpayment, bool switchinvest, bool nopayoff, double startingloanpayment);
 
 int main() {
     bool switchinvest;
@@ -58,10 +61,7 @@ int main() {
     minPayment = getValidDouble(true);
     minPayment = checkDouble4(minPayment);
     
-    if (LoanInvestPayment < minPayment) {
-        printf("You didn't set aside enough money to pay off our loans. Ending program.");
-        exit(0);
-    }
+    checkLoanInvestPayment(LoanInvestPayment, minPayment);
     
     printf("Enter your current age: ");
     currentAge = getValidInt(true);
@@ -74,7 +74,24 @@ int main() {
     printf("Enter the annual rate of return you predict for your investments: ");
     rateOfReturn = getValidDouble(true);
     rateOfReturn = checkDouble5(rateOfReturn);
+    timeInterval = (RetireAge - currentAge) * 12;
+    startingloanPayment = PayOffLoanBeforeInvest(currentAge, RetireAge, LoanInvestPayment, oweloans, interestRate, rateOfReturn);
+    InvestWithMinPayment(currentAge, RetireAge, LoanInvestPayment, oweloans, interestRate, rateOfReturn, minPayment, switchinvest, nopayoff, startingloanPayment);
+    
+    return 0;
+}
 
+void checkLoanInvestPayment(double LoanInvestPayment, double minPayment) {
+  if (LoanInvestPayment < minPayment) {
+        printf("You didn't set aside enough money to pay off our loans. Ending program.");
+        exit(0);
+    }
+}
+
+double PayOffLoanBeforeInvest(int currentAge, int RetireAge, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn)
+{
+    int timeInterval, i, remainingTime;
+    double startingloanPayment, difference;
     timeInterval = (RetireAge - currentAge) * 12;
     startingloanPayment = (oweloans * ((interestRate / 12) + 1) - LoanInvestPayment);
     difference = startingloanPayment - LoanInvestPayment;
@@ -86,15 +103,21 @@ int main() {
     if (difference < 0) {
         startingloanPayment = LoanInvestPayment - (startingloanPayment * ((interestRate / 12) + 1));
         for (remainingTime = i; remainingTime < timeInterval - 1; remainingTime++) {
-            startingloanPayment = (startingloanPayment * ((rateOfReturn / 12) + 1) + LoanInvestPayment);
+            startingloanPayment = (startingloanPayment * ((rateofreturn / 12) + 1) + LoanInvestPayment);
         }
     }
-    //  MIN LOAN PAYMENT CHECK - WHETHER WE FINISH OUR LOAN WITHIN THE GIVEN TIME OR NOT
-    
+    return startingloanPayment;
+}
+
+void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn, double minPayment, bool switchinvest, bool nopayoff, double startingloanpayment)
+{
+    double Loan_and_minPay_difference, startingMinLoan, newdifference, PreInv, ActualLoan, LoanWithMinPayment, InvestWithMinLoan, Loan_and_minPay_differnce;
+    int i, j, timeInterval, remainingtime, NewRemainingTime;
+    timeInterval = (Retireage - currentage) * 12;
     Loan_and_minPay_differnce = LoanInvestPayment - minPayment; //  94.68
     startingMinLoan = (oweloans * ((interestRate / 12) + 1) - minPayment);
     newdifference = startingMinLoan - minPayment;
-    
+
     for (i = 1, j = 0; i < timeInterval && newdifference > 0; i++, j++) {
         startingMinLoan = (startingMinLoan * ((interestRate / 12) + 1) - minPayment);
         newdifference = startingMinLoan - minPayment;
@@ -105,13 +128,13 @@ int main() {
     if (i < timeInterval - 1 && (switchinvest == true)) {
         PreInv = Loan_and_minPay_differnce;
         for (i = 0; i < j; i++) {
-            PreInv = (PreInv * ((rateOfReturn / 12) + 1) + Loan_and_minPay_differnce);
+            PreInv = (PreInv * ((rateofreturn / 12) + 1) + Loan_and_minPay_differnce);
         }   
         if (newdifference < 0) {
           LoanWithMinPayment = 0;
-          startingMinLoan = ((PreInv * ((rateOfReturn / 12) + 1)) + (LoanInvestPayment - (startingMinLoan * ((interestRate / 12) + 1))));
+          startingMinLoan = ((PreInv * ((rateofreturn / 12) + 1)) + (LoanInvestPayment - (startingMinLoan * ((interestRate / 12) + 1))));
             for (NewRemainingTime = i; NewRemainingTime < timeInterval - 2; NewRemainingTime++) {
-                startingMinLoan = (startingMinLoan * ((rateOfReturn / 12) + 1) + LoanInvestPayment);
+                startingMinLoan = (startingMinLoan * ((rateofreturn / 12) + 1) + LoanInvestPayment);
             }
         }
     }
@@ -119,7 +142,7 @@ int main() {
         nopayoff = true;
         InvestWithMinLoan = Loan_and_minPay_differnce;
         for (i = 1; i < timeInterval; ++i) {  // calculates how much you have in total for investments if you pay the minimum loan for the given interval
-            InvestWithMinLoan = (InvestWithMinLoan * ((rateOfReturn / 12) + 1) + Loan_and_minPay_differnce);
+            InvestWithMinLoan = (InvestWithMinLoan * ((rateofreturn / 12) + 1) + Loan_and_minPay_differnce);
         }
         ActualLoan = (oweloans * ((interestRate / 12) + 1));
         LoanWithMinPayment = ActualLoan - minPayment;
@@ -131,111 +154,41 @@ int main() {
                 NewRemainingTime = i;
                 break;
             }
-        }
+        } 
     }
-
-
-    // printf("%d\n", i);
-    // printf("%d\n", j);
-    // PreInv = Loan_and_minPay_differnce;
-    // for (i = 0; i < j; i++) {
-    //     PreInv = (PreInv * ((rateOfReturn / 12) + 1) + Loan_and_minPay_differnce);
-    // }   
-    // printf("PREINV: %.5lf\n", PreInv);
-    // printf("START: %.5lf\n", startingMinLoan);
-    // if (newdifference < 0) {
-    //     test = (LoanInvestPayment - (startingMinLoan * ((interestRate / 12) + 1)));
-    //     printf("%lf\n", test);
-    //     startingMinLoan = ((PreInv * ((rateOfReturn / 12) + 1)) + (LoanInvestPayment - (startingMinLoan * ((interestRate / 12) + 1))));
-    //     printf("NEWNEW: %.5lf\n", startingMinLoan);
-    //     for (NewRemainingTime = i; NewRemainingTime < timeInterval - 2; NewRemainingTime++) {
-    //         startingMinLoan = (startingMinLoan * ((rateOfReturn / 12) + 1) + LoanInvestPayment);
-    //     }
-    // }
-    // printf("startingMinLoan: %.5lf\n", startingMinLoan);
-    
-    // Final_investment = startingMinLoan;
-    // printf("Final investment: %.5lf\n", Final_investment);
-
-
-    // InvestWithMinLoan = Loan_and_minPay_differnce;
-
-    // for (i = 1; i < timeInterval; ++i) {  // calculates how much you have in total for investments if you pay the minimum loan for the given interval
-    //     InvestWithMinLoan = (InvestWithMinLoan * ((rateOfReturn / 12) + 1) + Loan_and_minPay_differnce);
-    // }
-    
-    // ActualLoan = (oweloans * ((interestRate / 12) + 1));
-    // LoanWithMinPayment = ActualLoan - minPayment;
-    
-    // for (i = 1; i < timeInterval; ++i) {  //  calculates how much you have in loans after paying the minimum payment for the given interval
-    //     LoanWithMinPayment = (LoanWithMinPayment * ((interestRate / 12) + 1) - minPayment);
-    //     if (LoanWithMinPayment < 0 && (timeInterval - i > 0)) {
-    //         NewRemainingTime = i;
-    //         break;
-    //     }
-    // }
-    // for (i=1; i < NewRemainingTime; ++i) {
-    //     InvestWithMinLoan = (InvestWithMinLoan * ((rateOfReturn / 12) + 1) + Loan_and_minPay_differnce);
-    // }
     if (nopayoff == true) {
       if (LoanWithMinPayment > 0.00) {
         printf("Warning! After you retire you will still have $%.2lf in loans left.\n", LoanWithMinPayment);
       }
-      if ((startingMinLoan > 0) && (startingloanPayment < InvestWithMinLoan)) {
+      if ((startingMinLoan > 0) && (startingloanpayment < InvestWithMinLoan)) {
         printf("You should only make the minimum payments on your loan and apply\nthe rest towards retirement.\n");
         printf("If you do you will have $%.2lf when you retire as", InvestWithMinLoan);
-        printf(" opposed to $%.2lf if you payed off your loan before investing.", startingloanPayment);
+        printf(" opposed to $%.2lf if you payed off your loan before investing.", startingloanpayment);
         exit(0);
       }
       else {
         printf("You should apply all $%.2lf towards your loan before making any investments.\n", LoanInvestPayment);
-        printf("If you do you will have $%.2lf when you retire as opposed to $%.2lf if you only made minimum payments.", startingloanPayment, InvestWithMinLoan);
+        printf("If you do you will have $%.2lf when you retire as opposed to $%.2lf if you only made minimum payments.", startingloanpayment, InvestWithMinLoan);
         exit(0);
       }
     }
     else {
       if (switchinvest == true) {
-        if ((startingMinLoan > 0) && (startingloanPayment < startingMinLoan)) {
+        if ((startingMinLoan > 0) && (startingloanpayment < startingMinLoan)) {
             printf("You should only make the minimum payments on your loan and apply\nthe rest towards retirement.\n");
             printf("If you do you will have $%.2lf when you retire as", startingMinLoan);
-            printf(" opposed to $%.2lf if you payed off your loan before investing.", startingloanPayment);
+            printf(" opposed to $%.2lf if you payed off your loan before investing.", startingloanpayment);
             exit(0);
         }
         else {
           printf("You should apply all $%.2lf towards your loan before making any investments.\n", LoanInvestPayment);
-          printf("If you do you will have $%.2lf when you retire as opposed to $%.2lf if you only made minimum payments.", startingloanPayment, startingMinLoan);
+          printf("If you do you will have $%.2lf when you retire as opposed to $%.2lf if you only made minimum payments.", startingloanpayment, startingMinLoan);
           exit(0);
         }
       }
     }
-    /*
-    printf("LoanWithMinPayment %lf", LoanWithMinPayment);
-    if (LoanWithMinPayment > 0.00) {
-      printf("Warning! After you retire you will still have $%.2lf in loans left.\n", LoanWithMinPayment);
-    }
-    printf("Starting minloan: %lf", startingMinLoan);
-    printf("InvestwithminLoan: %lf", InvestWithMinLoan);
-    if ((startingMinLoan > 0) && (startingMinLoan < InvestWithMinLoan)) {
-        printf("You!!!");
-        printf("You should only make the minimum payments on your loan and apply\nthe rest towards retirement.\n");
-        printf("If you do you will have $%.2lf when you retire as", startingloanPayment);
-        printf(" opposed to $%.2lf if you payed off your loan before investing.", startingMinLoan);
-        exit(0);
-    }
-    if (InvestWithMinLoan > startingloanPayment) {
-      printf("You should only make the minimum payments on your loan and apply\nthe rest towards retirement.\n");
-      printf("If you do you will have $%.2lf when you retire as", InvestWithMinLoan);
-      printf(" opposed to $%.2lf if you payed off your loan before investing.", startingloanPayment);
-      exit(0);
-    }
-    else {
-      printf("You should apply all $%.2lf towards your loan before making any investments.\n", LoanInvestPayment);
-      printf("If you do you will have $%.2lf when you retire as opposed to $%.2lf if you only made minimum payments.", startingloanPayment, startingMinLoan);
-      exit(0);
-    }
-    */
-    return 0;
-}
+  }
+
 
 bool isValidFormat(const int numArgsNeeded, const int numArgsRead, bool isLastElement) {
   char nextChar;
@@ -245,7 +198,7 @@ bool isValidFormat(const int numArgsNeeded, const int numArgsRead, bool isLastEl
 
   if (isLastElement) {
     scanf("%c", &nextChar); 
-    return nextChar == '\n';
+    return nextChar == '\n' || nextChar == '\t' || nextChar == ' ';
   } else {
     return true;
   }
