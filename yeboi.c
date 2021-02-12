@@ -4,16 +4,11 @@
 #include <stdbool.h>
 #include <time.h>
 
-bool isValidFormat(const int numArgsNeeded, const int numArgsRead, bool isLastElement);
-int getValidInt(const bool isLastElementOnLine);
-double getValidDouble(const bool isLastElementOnLine);
-double checkDouble1(double num);
-double checkDouble2(double num);
-double checkDouble3(double num);
-double checkDouble4(double num);
-double checkDouble5(double num);
-int checkNum1(int num);
-int checkNum2(int num);
+bool isValidFormat(const int numArgsRead, const int numArgsNeed);
+bool my_isspace(char c);
+int getValidInt(const char* prompt);
+double getValidDouble(const char* prompt);
+int getValidInt2(const char* prompt, int currentAge);
 void checkLoanInvestPayment(double LoanInvestPayment, double minPayment);
 double PayOffLoanBeforeInvest(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn);
 void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn, double minpayment, bool switchinvest, bool nopayoff, double startingloanpayment);
@@ -21,61 +16,39 @@ void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPaymen
 int main() {
     bool switchinvest;
     bool nopayoff;
-    int i;
-    int j;
-    double test;
-    double PreInv;
-    double Final_investment;
-    double startingMinLoan = 0;
-    double newdifference;
     double oweloans, LoanInvestPayment;
     double interestRate, minPayment, rateOfReturn;
     int currentAge, RetireAge;
-    int timeInterval;
-    double minLoanRestInvest;
     double startingloanPayment;
-    double InvestWithMinLoan;
-    double Loan_and_minPay_differnce;
-    int remainingTime;
-    int NewRemainingTime;
-    double ActualLoan;
-    double LoanWithMinPayment;
-    double difference;
+
+    
   
     switchinvest = false;
     nopayoff = false;
     
-    printf("Enter how much money you will be putting towards loans/retirement each month: ");
-    LoanInvestPayment = getValidDouble(true);
-    LoanInvestPayment = checkDouble1(LoanInvestPayment);
-
-    printf("Enter how much you owe in loans: ");
-    oweloans = getValidDouble(true);
-    oweloans = checkDouble2(oweloans);
-
-    printf("Enter the annual interest rate of the loans: ");
-    interestRate = getValidDouble(true);
-    interestRate = checkDouble3(interestRate);
+    LoanInvestPayment = getValidDouble("Enter how much money you will be putting towards loans/retirement each month: ");
+  
+    oweloans = getValidDouble("Enter how much you owe in loans: ");
     
-    printf("Enter your minimum monthly loan payment: ");
-    minPayment = getValidDouble(true);
-    minPayment = checkDouble4(minPayment);
+
+    interestRate = getValidDouble("Enter the annual interest rate of the loans: ");
+   
+    
+    minPayment = getValidDouble("Enter your minimum monthly loan payment: ");
     
     checkLoanInvestPayment(LoanInvestPayment, minPayment);
     
-    printf("Enter your current age: ");
-    currentAge = getValidInt(true);
-    currentAge = checkNum1(currentAge);
+    currentAge = getValidInt("Enter your current age: ");
 
-    printf("Enter the age you plan to retire at: ");
-    RetireAge = getValidInt(true);
-    RetireAge = checkNum2(RetireAge);
 
-    printf("Enter the annual rate of return you predict for your investments: ");
-    rateOfReturn = getValidDouble(true);
-    rateOfReturn = checkDouble5(rateOfReturn);
-    timeInterval = (RetireAge - currentAge) * 12;
+    RetireAge = getValidInt2("Enter the age you plan to retire at: ", currentAge);
+
+    
+    rateOfReturn = getValidDouble("Enter the annual rate of return you predict for your investments: ");
+
+
     startingloanPayment = PayOffLoanBeforeInvest(currentAge, RetireAge, LoanInvestPayment, oweloans, interestRate, rateOfReturn);
+    
     InvestWithMinPayment(currentAge, RetireAge, LoanInvestPayment, oweloans, interestRate, rateOfReturn, minPayment, switchinvest, nopayoff, startingloanPayment);
     
     return 0;
@@ -111,8 +84,8 @@ double PayOffLoanBeforeInvest(int currentAge, int RetireAge, double LoanInvestPa
 
 void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPayment, double oweloans, double interestRate, double rateofreturn, double minPayment, bool switchinvest, bool nopayoff, double startingloanpayment)
 {
-    double Loan_and_minPay_difference, startingMinLoan, newdifference, PreInv, ActualLoan, LoanWithMinPayment, InvestWithMinLoan, Loan_and_minPay_differnce;
-    int i, j, timeInterval, remainingtime, NewRemainingTime;
+    double startingMinLoan, newdifference, PreInv, ActualLoan, LoanWithMinPayment, InvestWithMinLoan = 0, Loan_and_minPay_differnce;
+    int i, j, timeInterval, NewRemainingTime;
     timeInterval = (Retireage - currentage) * 12;
     Loan_and_minPay_differnce = LoanInvestPayment - minPayment; //  94.68
     startingMinLoan = (oweloans * ((interestRate / 12) + 1) - minPayment);
@@ -189,168 +162,65 @@ void InvestWithMinPayment(int currentage, int Retireage, double LoanInvestPaymen
     }
   }
 
-
-bool isValidFormat(const int numArgsNeeded, const int numArgsRead, bool isLastElement) {
-  char nextChar;
-  if (numArgsNeeded != numArgsRead) {
-    return false;
-  }
-
-  if (isLastElement) {
-    scanf("%c", &nextChar); 
-    return nextChar == '\n' || nextChar == '\t' || nextChar == ' ';
-  } else {
-    return true;
-  }
-
+bool my_isspace(char c){
+	return c == ' ' || c == '\n' || c == '\t';
 }
 
-int getValidInt(const bool isLastElementOnLine) 
-{
-  const int numArgsNeeded = 1;
-  int numArgsRead;
+bool isValidFormat(const int numArgsRead, const int numArgsNeed) {
+  bool formatIsGood = numArgsRead == numArgsNeed;
+  char character;
+  do{
+    scanf("%c", &character); //45  bob  \n
+    if(!my_isspace(character)){
+      formatIsGood = false;
+    }
+  }while(character != '\n');
+  return formatIsGood;
+}
+
+int getValidInt(const char* prompt){
   int num;
-
-  numArgsRead = scanf(" %d", &num);
-  if (isValidFormat(numArgsNeeded, numArgsRead, isLastElementOnLine)) {
-    if (num < 0) {
-        return 1;
-    }
-    else {
-        return num;
-    }
-  } else {
-    return 0;
-  }
-}
-
-double getValidDouble(const bool isLastElementOnLine) 
-{
   const int numArgsNeeded = 1;
   int numArgsRead;
-  double num;
+  do{
+    printf("%s", prompt);
+    numArgsRead = scanf(" %d", &num); //45\n
+  }while(!isValidFormat(numArgsRead, numArgsNeeded) || num < 0);
 
-  numArgsRead = scanf(" %lf", &num);
-  if (isValidFormat(numArgsNeeded, numArgsRead, isLastElementOnLine)) {
-    if (num < 0) {
-        return 1;
-    }
-    else {
-        return num;
-    }
-  } else {
-    return 0;
+  return num;
+}
+
+int getValidInt2(const char* prompt, int currentAge)
+{
+  int num, RetireAge;
+  const int numArgsNeeded = 1;
+  int numArgsRead;
+  do{
+    printf("%s", prompt);
+    numArgsRead = scanf(" %d", &num); //45\n
+  }while(!isValidFormat(numArgsRead, numArgsNeeded) || (num <= 0));
+  RetireAge = num;
+  while (RetireAge < currentAge) {
+    do{
+      printf("%s", prompt);
+      numArgsRead = scanf(" %d", &RetireAge); //45\n
+    } while(!isValidFormat(numArgsRead, numArgsNeeded) || (RetireAge <= 0));
   }
+  return RetireAge;
 }
 
-double checkDouble1(double num) 
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter how much money you will be putting towards loans/retirements each month: ");
-      num = getValidDouble(true);
-    }
+double getValidDouble(const char* prompt){
+  double num;
+  const int numArgsNeeded = 1;
+  int numArgsRead;
+  do{
+    printf("%s", prompt);
+    numArgsRead = scanf(" %lf", &num); //45\n
+  }while(!isValidFormat(numArgsRead, numArgsNeeded) || (num < 0));
+
   return num;
 }
 
-double checkDouble2(double num) 
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter how much you owe in loans: ");
-      num = getValidDouble(true);
-    }
-  return num;
-}
 
-double checkDouble3(double num) 
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter the annual interest rate of the loans: ");
-      num = getValidDouble(true);
-    }
-  return num;
-}
 
-double checkDouble4(double num) 
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter your minimum monthly loan payment: ");
-      num = getValidDouble(true);
-    }
-  return num;
-}
 
-double checkDouble5(double num) 
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter the annual rate of return you predict for your investments: ");
-      num = getValidDouble(true);
-    }
-  return num;
-}
-
-int checkNum1(int num)
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter your current age: ");
-      num = getValidInt(true);
-    }
-  return num;
-}
-
-int checkNum2(int num)
-{
-  char c;
-  while (num == 0 || num == 1) {
-      while (true && (num != 1)) {
-          scanf("%c", &c);
-          if (c == '\n') {
-            break;
-          }
-        }
-      printf("Enter the age you plan to retire at: ");
-      num = getValidInt(true);
-    }
-  return num;
-}
